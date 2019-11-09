@@ -1,25 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {createContext, useState, useContext} from 'react';
+// import logo from './logo.svg';
 import './App.css';
 
-function App() {
+const BatteryContext= createContext(90);
+const OnlineContext= createContext();
+
+function Leaf() {
+  const battery = useContext(BatteryContext)
+  return(
+    // <BatteryContext.Consumer>
+    //   {
+    //     battery => (
+    //       <h1>Battery: {battery}</h1>
+    //     )
+    //   }
+    // </BatteryContext.Consumer>
+    <h1>Battery: {battery}</h1>
+  );
+}
+
+function Middle() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Leaf/>
+  );
+}
+
+function App() {
+  const [battery, setBattery] = useState(60)
+  const [online, setOnline] = useState(false)
+  return (
+    <BatteryContext.Provider value={battery}>
+      <OnlineContext.Provider value={online}>
+        <button type="button"
+         onClick={() => setBattery(battery -1)}>
+          Press
+        </button>
+        <button type="button"
+         onClick={() => setOnline(!online)}>
+          Switch
+        </button>
+        <Middle />
+      </OnlineContext.Provider>
+    </BatteryContext.Provider>
   );
 }
 
