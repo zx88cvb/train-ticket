@@ -25,8 +25,11 @@ function Middle() {
   );
 }
 
-function App() {
-  const [battery, setBattery] = useState(60)
+function App(props) {
+  const [battery, setBattery] = useState(() => {
+    console.log('initial count');
+    return props.defaultCount || 60;
+  })
   const [online, setOnline] = useState(false)
   return (
     <BatteryContext.Provider value={battery}>
