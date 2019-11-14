@@ -1,4 +1,10 @@
-import React, {createContext, useState, useContext} from 'react';
+import React, {createContext, 
+  useState, 
+  useContext, 
+  useEffect, 
+  useMemo,
+  memo,
+  useCallback} from 'react';
 // import logo from './logo.svg';
 import './App.css';
 
@@ -31,6 +37,30 @@ function App(props) {
     return props.defaultCount || 60;
   })
   const [online, setOnline] = useState(false)
+
+  const [count, setCount] = useState(0);
+  const [size, setSize] = useState({
+    width: document.documentElement.clientWidth,
+    height: document.documentElement.clientHeight
+  });
+
+  const onResize = () => {
+    setSize({
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight
+    })
+  }
+  useEffect(() => {
+    document.title = `You clicked ${count} times`;
+  }, [count]);
+
+  useEffect(() => {
+    window.addEventListener('resize', onResize, false);
+
+    return () => {
+      window.removeEventListener('resize', onResize, false);
+    };
+  }, []);
   return (
     <BatteryContext.Provider value={battery}>
       <OnlineContext.Provider value={online}>
@@ -42,10 +72,43 @@ function App(props) {
          onClick={() => setOnline(!online)}>
           Switch
         </button>
+        <button onClick={() => setCount(count + 1)}>
+          Click Title
+          size: {size.width} x {size.height}
+        </button>
         <Middle />
       </OnlineContext.Provider>
     </BatteryContext.Provider>
   );
 }
 
-export default App;
+const Counter = memo(function Counter(props) {
+  console.log('Counter reder');
+  return (
+    <h1 onClick={props.onClick}>{props.count}</h1>
+  );
+});
+
+function MemoApp() {
+  const [count, setCount] = useState(0);
+
+  const double = useMemo(() => {
+    return count * 2;
+  }, [count === 3]);
+
+  const onClick = useCallback(() => {
+    console.log('Click');
+  }, []);
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>
+        Click Count double: {double}
+      </button>
+      <Counter count={double} 
+      onClick={onClick}/>
+    </div>
+  );
+}
+
+export default MemoApp;
