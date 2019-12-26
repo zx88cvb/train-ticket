@@ -1,13 +1,32 @@
 import React, {useState,
-  useCallback}
+  useEffect,
+  useCallback,
+  useRef}
   from 'react'
 import './TodoList.css'
+
+let idSeq = Date.now();
 
 function Control(props) {
   const { addTodo } = props;
 
+  const inputRef = useRef();
+
   const onSubmit = (e) => {
     e.preventDefault();
+
+    const newText = inputRef.current.value.trim();
+    if (newText.length === 0) {
+      return;
+    }
+
+    addTodo({
+      id: ++idSeq,
+      text: newText,
+      complete: false
+    });
+
+    inputRef.current.value = '';
   };
   return (
     <div className="control">
@@ -16,6 +35,7 @@ function Control(props) {
       </h1>
       <form onSubmit={onSubmit}>
         <input type="text"
+          ref={inputRef}
           className="new-todo"
           placeholder="write something?" />
       </form>
@@ -70,6 +90,8 @@ function TodoItem (props) {
   );
 }
 
+const LS_KEY = '$-todos_';
+
 function TodoList() {
   const [todos, setTodos] = useState([]);
 
@@ -93,6 +115,15 @@ function TodoList() {
       : todo;
     }));
   }, []);
+
+  useEffect(() => {
+    const todos = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    setTodos(todos);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(todos));
+  }, [todos]);
 
   return (
     <div className="todo-list">
