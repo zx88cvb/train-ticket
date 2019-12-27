@@ -5,7 +5,29 @@ import React, {useState,
   from 'react'
 import './TodoList.css'
 
+import {
+  createSet,
+  createAdd,
+  createRemove,
+  createToggle
+} from './action'
+
+
 let idSeq = Date.now();
+
+function bindActionCreators(actionCreators, dispatch) {
+  const ret = {};
+
+  for (let key in actionCreators) {
+    ret[key] = function(...args) {
+      const actionCreator = actionCreators[key];
+      const action = actionCreator(...args);
+      dispatch(action);
+    };
+  }
+
+  return ret;
+}
 
 function Control(props) {
   const { addTodo } = props;
@@ -26,6 +48,12 @@ function Control(props) {
       complete: false
     });
 
+    // dispatch(createAdd({
+    //   id: ++idSeq,
+    //   text: newText,
+    //   complete: false
+    // }));
+
     inputRef.current.value = '';
   };
   return (
@@ -44,7 +72,7 @@ function Control(props) {
 }
 
 function Todos(props) {
-  const {todos, toggleTodo, removeTodo} = props;
+  const {todos, removeTodo, toggleTodo} = props;
   return (
     <ul>
       {
@@ -52,8 +80,9 @@ function Todos(props) {
           return <TodoItem
                   key={todo.id}
                   todo={todo}
+                  removeTodo={removeTodo}
                   toggleTodo={toggleTodo}
-                  removeTodo={removeTodo}/>
+                  />
         })
       }
     </ul>
@@ -67,16 +96,18 @@ function TodoItem (props) {
       text,
       complete
     },
-    toggleTodo,
-    removeTodo
+    removeTodo,
+    toggleTodo
   } = props;
 
   const onChange = () => {
     toggleTodo(id);
+    // dispatch(createToggle(id));
   };
 
   const onRemove = () => {
     removeTodo(id);
+    // dispatch(createRemove(id));
   };
 
   return (
@@ -95,30 +126,59 @@ const LS_KEY = '$-todos_';
 function TodoList() {
   const [todos, setTodos] = useState([]);
 
-  const addTodo = useCallback((todo) => {
-    setTodos(todos => [...todos, todo]);
-  }, []);
+  // const addTodo = useCallback((todo) => {
+  //   setTodos(todos => [...todos, todo]);
+  // }, []);
 
-  const removeTodo = useCallback((id) => {
-    setTodos(todos => todos.filter(todo => {
-      return todo.id !== id;
-    }));
-  }, []);
+  // const removeTodo = useCallback((id) => {
+  //   setTodos(todos => todos.filter(todo => {
+  //     return todo.id !== id;
+  //   }));
+  // }, []);
 
-  const toggleTodo = useCallback((id) => {
-    setTodos(todos => todos.map(todo => {
-      return todo.id === id
-      ? {
-        ...todo,
-        complete: !todo.complete,
-      }
-      : todo;
-    }));
+  // const toggleTodo = useCallback((id) => {
+  //   setTodos(todos => todos.map(todo => {
+  //     return todo.id === id
+  //     ? {
+  //       ...todo,
+  //       complete: !todo.complete,
+  //     }
+  //     : todo;
+  //   }));
+  // }, []);
+
+  const dispatch = useCallback((action) => {
+    const {type, payload } = action;
+    switch(type) {
+      case 'set':
+        setTodos(payload);
+        break;
+      case 'add':
+        setTodos(todos => [...todos, payload]);
+        break;
+      case 'remove':
+        setTodos(todos => todos.filter(todo => {
+          return todo.id !== payload;
+        }));
+        break;
+      case 'toggle':
+        setTodos(todos => todos.map(todo => {
+          return todo.id === payload
+          ? {
+            ...todo,
+            complete: !todo.complete,
+          }
+          : todo;
+        }));
+        break;
+      default:
+    }
   }, []);
 
   useEffect(() => {
     const todos = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
-    setTodos(todos);
+    // setTodos(todos);
+    dispatch(createSet(todos));
   }, []);
 
   useEffect(() => {
@@ -127,8 +187,20 @@ function TodoList() {
 
   return (
     <div className="todo-list">
-      <Control addTodo={addTodo} />
-      <Todos removeTodo={removeTodo} toggleTodo={toggleTodo} todos={todos} />
+      <Control 
+      {
+        ...bindActionCreators({
+          addTodo: createAdd
+        }, dispatch)
+      }
+      />
+      <Todos 
+      {
+        ...bindActionCreators({
+          removeTodo: createRemove,
+          toggleTodo: createToggle
+        }, dispatch)
+      } todos={todos} />
     </div>
   )
 }
