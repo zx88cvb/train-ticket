@@ -16,9 +16,8 @@ export default {
         return payload;
       default:
     }
-
     return state;
-},
+  },
   to(state = '上海', action) {
     const { type, payload } = action;
     switch (type) {
