@@ -12,6 +12,8 @@ import HighSpeed from './HighSpeed';
 import Journey from './Journey';
 import Submit from './Submit';
 
+import CitySelector from '../common/CitySelector';
+
 import {
   exchangeFromTo,
   showCitySelector
@@ -22,6 +24,9 @@ function App(props) {
   const {
     from,
     to,
+    isCitySelectorVisible,
+    cityData,
+    isLoadingCityData,
     dispatch
   } = props;
 
@@ -61,6 +66,10 @@ function App(props) {
         <HighSpeed />
         <Submit />
       </form>
+      <CitySelector 
+        show={isCitySelectorVisible}
+        cityData={cityData}
+        isLoading={isLoadingCityData} />
     </div>
   );
 }
