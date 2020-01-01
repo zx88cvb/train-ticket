@@ -16,7 +16,8 @@ import CitySelector from '../common/CitySelector';
 
 import {
   exchangeFromTo,
-  showCitySelector
+  showCitySelector,
+  hideCitySelector
 } from './actions';
 
 function App(props) {
@@ -49,6 +50,12 @@ function App(props) {
     }, dispatch);
   }, [dispatch]);
 
+  const citySelectorCbs = useMemo(() => {
+    return bindActionCreators({
+      onBack: hideCitySelector
+    }, dispatch);
+  }, [dispatch]);
+
   return (
     <div>
       <div className="header-wrapper">
@@ -69,7 +76,8 @@ function App(props) {
       <CitySelector 
         show={isCitySelectorVisible}
         cityData={cityData}
-        isLoading={isLoadingCityData} />
+        isLoading={isLoadingCityData}
+        {...citySelectorCbs} />
     </div>
   );
 }

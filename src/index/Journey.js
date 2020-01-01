@@ -7,12 +7,12 @@ export default function Journey(props) {
     from,
     to,
     exchangeFromTo,
-    showCitySelectors
+    showCitySelector
   } = props;
   return (
     <div className="journey">
       <div className="journey-station"
-        onClick={() => showCitySelectors(true)}>
+        onClick={() => showCitySelector(true)}>
         <input type="text"
           readOnly
           name="from"
@@ -27,7 +27,7 @@ export default function Journey(props) {
          alt="switch" />
       </div>
       <div className="journey-station"
-        onClick={() => showCitySelectors(false)}>
+        onClick={() => showCitySelector(false)}>
         <input type="text"
           readOnly
           name="to"
