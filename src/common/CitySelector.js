@@ -1,19 +1,102 @@
 import React, {
   useState,
   useEffect,
-  useMemo
+  useMemo,
+  memo
 } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import './CitySelector.css';
 
-export default function CitySelector(props) {
+// 城市项
+const CityItem = memo(function CityItem(props) {
+  const {
+    name,
+    onSelect
+  } = props;
+
+  return (
+    <li className="city-li" onClick={() => onSelect(name)}>
+      {name}
+    </li>
+  );
+});
+
+CityItem.propTypes = {
+  name: PropTypes.string.isRequired,
+  onSelect: PropTypes.func.isRequired
+}
+
+// 同字母城市集合
+const CitySection = memo(function CitySection(props) {
+  const {
+    title,
+    cities = [],
+    onSelect
+  } = props;
+
+  return (
+    <ul className="city-ul">
+      <li className="city-li" key="title">
+        { title }
+      </li>
+      {
+        cities.map(city => {
+          return <CityItem key={city.name}
+           name={city.name}
+           onSelect={onSelect}/>
+        })
+      }
+    </ul>
+  );
+});
+
+CitySection.propTypes = {
+  title: PropTypes.string.isRequired,
+  cities: PropTypes.array,
+  onSelect: PropTypes.func.isRequired
+}
+
+// 城市集合
+const CityList = memo(function CityList(props) {
+  const {
+    sections,
+    onSelect
+  } = props;
+
+  return (
+    <div className="city-list">
+      <div className="city-cate">
+        {
+          sections.map(section => {
+            return (
+              <CitySection
+                key={section.title}
+                title={section.title}
+                cities={section.citys}
+                onSelect={onSelect}/>
+            );
+            
+          })
+        }
+      </div>
+    </div>
+  );
+});
+
+CityList.propTypes = {
+  sections: PropTypes.array.isRequired,
+  onSelect: PropTypes.func.isRequired
+}
+
+const CitySelector = memo(function CitySelector(props) {
   const {
     show,
     cityData,
     isLoading,
     onBack,
-    fetchCityData
+    fetchCityData,
+    onSelect
   } = props;
 
   const [searchKey, setSearchKey] = useState('');
@@ -26,6 +109,22 @@ export default function CitySelector(props) {
     }
     fetchCityData();
   }, [show, cityData, isLoading, fetchCityData]);
+
+  const outputCitySections = () => {
+    if (isLoading) {
+      return <div>loading</div>;
+    }
+
+    if (cityData) {
+      return (
+        <CityList
+          sections={cityData.cityList}
+          onSelect={onSelect} />
+      );
+    }
+
+    return <div>error</div>;
+  }
 
   classnames('city-selector', {
     hidden: !show
@@ -57,14 +156,18 @@ export default function CitySelector(props) {
           &#xf063;
         </i>
       </div>
+      { outputCitySections() }
     </div>
   );
-}
+});
 
 CitySelector.propTypes = {
   show: PropTypes.bool.isRequired,
   cityData: PropTypes.object,
   isLoading: PropTypes.bool.isRequired,
   onBack: PropTypes.func.isRequired,
-  fetchCityData: PropTypes.func.isRequired
+  fetchCityData: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired
 }
+
+export default CitySelector;

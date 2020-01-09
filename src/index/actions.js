@@ -63,6 +63,7 @@ export function showCitySelector(currentSelectingLeftCity) {
   };
 }
 
+// 关闭城市选择浮层
 export function hideCitySelector() {
   return {
     type: ACTION_SET_IS_CITY_SELECTOR_VISIBLE,
@@ -79,6 +80,9 @@ export function setSelectedCity(city) {
     } else {
       dispatch(setTo(city));
     }
+
+    // 关闭城市选择浮层
+    dispatch(hideCitySelector());
   };
 }
 
