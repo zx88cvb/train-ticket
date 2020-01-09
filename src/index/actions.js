@@ -104,3 +104,40 @@ export function exchangeFromTo() {
     dispatch(setTo(from));
   };
 }
+
+// 加载city数据
+export function fetchCityData() {
+  return (dispatch, getState) => {
+    const { isLoadingCityData } = getState();
+    if (isLoadingCityData) {
+      return;
+    }
+
+    // 获取localStorage缓存中的数据
+    const cache = JSON.parse(localStorage.getItem('city_data_cache') || '{}');
+
+    if (Date.now < cache.expires) {
+      dispatch(setCityData(cache.data));
+      return;
+    }
+    dispatch(setIsLoadingCityData(true));
+
+    // Date.now() 防止缓存
+    fetch('/rest/cities?_' + Date.now())
+      .then(res => res.json())
+      // 成功
+      .then(cityData => {
+        dispatch(setCityData(cityData));
+        // 将城市数据 缓存到 localStorage中
+        localStorage.setItem('city_data_cache', JSON.stringify({
+          expires: Date.now() + 60 * 1000,
+          data: cityData
+        }));
+        dispatch(setIsLoadingCityData(false));
+      })
+      // 500
+      .catch(() => {
+        dispatch(setIsLoadingCityData(false));
+      });
+  };
+}
