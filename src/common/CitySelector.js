@@ -33,6 +33,83 @@ AlphaIndex.propTypes = {
   onClick: PropTypes.func.isRequired
 }
 
+// 搜索建议项
+const SuggestItem = memo(function SuggestItem(props) {
+  const {
+    name,
+    onClick
+  } = props;
+
+  return (
+    <li className="city-suggest-li"
+      onClick={() => onClick(name)}>
+        { name }
+    </li>
+  );
+});
+
+SuggestItem.propTypes = {
+  name: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired
+}
+
+// 建议
+const Suggest = memo(function Suggest(props) {
+  const {
+    searchKey,
+    onSelect
+  } = props;
+
+  const [result, setResult] = useState([]);
+
+  useEffect(() => {
+    fetch('/rest/search?key=' + encodeURIComponent(searchKey))
+    .then(res => res.json())
+    .then(data => {
+      const {
+        result,
+        searchKey: sKey
+      } = data;
+
+      if (sKey === searchKey) {
+        setResult(result);
+      }
+    });
+  }, [searchKey]);
+
+  const fallBackResult = useMemo(() => {
+    if (!result.length) {
+      return [{
+        display: searchKey
+      }]
+    }
+
+    return result;
+  }, [result, searchKey]);
+
+  return (
+    <div className="city-suggest">
+      <ul className="city-suggest-ul">
+        {
+          fallBackResult.map(item => {
+            return (
+              <SuggestItem
+                key={item.display}
+                name={item.display}
+                onClick={onSelect}/>
+            );
+          })
+        }
+      </ul>
+    </div>
+  );
+});
+
+Suggest.propTypes = {
+  searchKey: PropTypes.string.isRequired,
+  onSelect: PropTypes.func.isRequired
+}
+
 // 城市项
 const CityItem = memo(function CityItem(props) {
   const {
@@ -197,6 +274,13 @@ const CitySelector = memo(function CitySelector(props) {
           &#xf063;
         </i>
       </div>
+      {
+        Boolean(key) && (
+          <Suggest 
+            searchKey={key}
+            onSelect={key => onSelect(key)}/>
+        )
+      }
       { outputCitySections() }
     </div>
   );
